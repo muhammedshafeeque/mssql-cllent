@@ -1,0 +1,22 @@
+PLACEHOLDER FOR ICON FILES
+
+This file should be replaced with actual icon files:
+
+1. icon.png - 512x512 PNG icon for Linux
+2. icon.ico - Windows icon file with multiple sizes
+3. icon.icns - macOS icon file (optional)
+
+To create these icons:
+
+1. Design a 512x512 PNG icon with the Byzand logo
+2. Convert to ICO format for Windows (use online converters)
+3. Convert to ICNS format for macOS (optional)
+
+The icon should represent:
+- Database/SQL theme
+- Modern, clean design
+- Byzand branding
+- Professional appearance
+
+Once you have the actual icon files, delete this placeholder file.
+

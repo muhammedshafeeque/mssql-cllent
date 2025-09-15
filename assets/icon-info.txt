@@ -1,0 +1,23 @@
+Byzand MSSQL Client Icon
+
+This is a placeholder. To create proper icons:
+
+1. Design a 512x512 icon with:
+   - Database/SQL theme
+   - Byzand branding
+   - Modern, clean design
+   - Professional colors
+
+2. Convert to required formats:
+   - icon.png (512x512) for Linux
+   - icon.ico (multiple sizes) for Windows
+   - icon.icns (optional) for macOS
+
+3. Replace this file with actual icon files
+
+Suggested design elements:
+- Database cylinder or server icon
+- SQL/query symbols
+- Modern gradient colors
+- Clean typography
+- Professional appearance
