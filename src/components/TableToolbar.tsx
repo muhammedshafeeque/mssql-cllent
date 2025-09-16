@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Loader from './Loader';
+import ConfirmationModal from './ConfirmationModal';
 
 interface TableToolbarProps {
   selectedDatabase: string | null;
@@ -33,6 +34,8 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   const [deleteAllLoading, setDeleteAllLoading] = useState(false);
   const [deleteTableLoading, setDeleteTableLoading] = useState(false);
   const [relationsLoading, setRelationsLoading] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [showDeleteTableConfirm, setShowDeleteTableConfirm] = useState(false);
 
   const handleExportData = async (format: 'csv' | 'excel' | 'json') => {
     setExportLoading(format);
@@ -44,20 +47,36 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   };
 
   const handleDeleteAllData = async () => {
+    setShowDeleteAllConfirm(true);
+  };
+
+  const confirmDeleteAllData = async () => {
     setDeleteAllLoading(true);
     try {
       await onDeleteAllData();
+    } catch (error) {
+      console.error('Error deleting all data:', error);
+      alert('Failed to delete all data. Please check the console for details.');
     } finally {
       setDeleteAllLoading(false);
+      setShowDeleteAllConfirm(false);
     }
   };
 
   const handleDeleteTable = async () => {
+    setShowDeleteTableConfirm(true);
+  };
+
+  const confirmDeleteTable = async () => {
     setDeleteTableLoading(true);
     try {
       await onDeleteTable();
+    } catch (error) {
+      console.error('Error deleting table:', error);
+      alert('Failed to delete table. Please check the console for details.');
     } finally {
       setDeleteTableLoading(false);
+      setShowDeleteTableConfirm(false);
     }
   };
 
@@ -176,6 +195,34 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           {deleteTableLoading ? <Loader size="small" type="spinner" /> : '❌'} Delete Table
         </button>
       </div>
+
+      {/* Delete All Data Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteAllConfirm}
+        onClose={() => setShowDeleteAllConfirm(false)}
+        onConfirm={confirmDeleteAllData}
+        title="Delete All Data"
+        message={`⚠️ DANGER: Are you sure you want to delete ALL data from "${selectedTable}"?\n\nThis will:\n• Remove ALL rows from the table\n• Cannot be undone\n• May break dependent applications\n• Keep table structure intact`}
+        confirmText="Delete All Data"
+        cancelText="Cancel"
+        type="danger"
+        requireTextInput="DELETE ALL"
+        loading={deleteAllLoading}
+      />
+
+      {/* Delete Table Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteTableConfirm}
+        onClose={() => setShowDeleteTableConfirm(false)}
+        onConfirm={confirmDeleteTable}
+        title="Delete Table"
+        message={`🚨 CRITICAL: Are you sure you want to DELETE the entire table "${selectedTable}"?\n\nThis will:\n• Remove the entire table structure\n• Delete ALL data permanently\n• Break all dependent queries\n• Cannot be undone\n• May cause application failures`}
+        confirmText="Delete Table"
+        cancelText="Cancel"
+        type="danger"
+        requireTextInput="DELETE TABLE"
+        loading={deleteTableLoading}
+      />
     </div>
   );
 };

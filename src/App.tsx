@@ -289,6 +289,7 @@ const App: React.FC = () => {
     setSelectedTable(null);
     setTableColumns([]);
     setTableData(null);
+    setCurrentFilters({}); // Clear any existing filters
     
     try {
       await window.electronAPI.connectToDatabase(dbName);
@@ -350,13 +351,15 @@ const App: React.FC = () => {
     setSelectedTable(tableName);
     setTableColumns([]);
     setTableData(null);
+    setCurrentFilters({}); // Clear any existing filters
     setActiveTab('data'); // Show data tab by default
+    setCurrentPage(1); // Reset to first page
     
     try {
       // Load both structure and data
       await Promise.all([
         loadTableStructure(tableName),
-        loadTableData(1, pageSize)
+        loadTableData(1, pageSize, {}) // Pass empty filters for fresh data
       ]);
     } catch (error: any) {
       console.error('Error loading table data:', error);
@@ -395,6 +398,11 @@ const App: React.FC = () => {
     }
     
     setLoadingTableData(true);
+    // Clear previous data immediately when starting to load new data
+    if (retryCount === 0) {
+      setTableData(null);
+    }
+    
     try {
       const result = await window.electronAPI.getTableData({
         dbName: selectedDatabase,
@@ -751,6 +759,28 @@ const App: React.FC = () => {
     setFilterTimeout(timeout);
   };
 
+  const editTableStructure = async (columns: Column[]) => {
+    if (!selectedDatabase || !selectedTable) return;
+
+    try {
+      const result = await window.electronAPI.editTableStructure({
+        dbName: selectedDatabase,
+        tableName: selectedTable,
+        columns: columns
+      });
+      
+      if (result.success) {
+        // Refresh table structure
+        await loadTableStructure(selectedTable);
+        showSuccess('Table structure updated successfully!');
+      } else {
+        showError(result.message);
+      }
+    } catch (error: any) {
+      showError(error.message);
+    }
+  };
+
 
 
 
@@ -857,6 +887,7 @@ const App: React.FC = () => {
           onCreateDatabaseDump={createDatabaseDump}
           onRestoreDatabaseDump={restoreDatabaseDump}
           onApplyFilters={applyFilters}
+          onEditStructure={editTableStructure}
         />
       )}
 

@@ -1,7 +1,7 @@
 {
   "name": "byzand",
   "productName": "Byzand MSSQL Client",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A beautiful MSSQL database client application",
   "main": ".vite/build/main.js",
   "scripts": {

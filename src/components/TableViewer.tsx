@@ -9,6 +9,8 @@ import RelationsModal from './RelationsModal';
 import CreateTableModal from './CreateTableModal';
 import ImportDataModal from './ImportDataModal';
 import FilterModal from './FilterModal';
+import EditStructureModal from './EditStructureModal';
+import ConfirmationModal from './ConfirmationModal';
 
 interface TableViewerProps {
   selectedDatabase: string | null;
@@ -33,6 +35,7 @@ interface TableViewerProps {
   onCreateTable?: (tableName: string, columns: any[]) => Promise<void>;
   onImportTableData?: (data: string, format: string) => Promise<void>;
   onApplyFilters?: (filters: Record<string, any>) => Promise<void>;
+  onEditStructure?: (columns: Column[]) => Promise<void>;
 }
 
 const TableViewer: React.FC<TableViewerProps> = ({
@@ -57,16 +60,20 @@ const TableViewer: React.FC<TableViewerProps> = ({
   onDeleteTable,
   onCreateTable,
   onImportTableData,
-  onApplyFilters
+  onApplyFilters,
+  onEditStructure
 }) => {
   const [showAddRowModal, setShowAddRowModal] = useState(false);
   const [showRelationsModal, setShowRelationsModal] = useState(false);
   const [showCreateTableModal, setShowCreateTableModal] = useState(false);
   const [showImportDataModal, setShowImportDataModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showEditStructureModal, setShowEditStructureModal] = useState(false);
   const [relations, setRelations] = useState<any[]>([]);
   const [loadingRelations, setLoadingRelations] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<Record<string, any>>({});
+  const [showDeleteRowConfirm, setShowDeleteRowConfirm] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<number | null>(null);
 
   const handleShowRelations = async () => {
     if (!selectedDatabase || !selectedTable) return;
@@ -94,12 +101,21 @@ const TableViewer: React.FC<TableViewerProps> = ({
     const row = tableData.data[rowIndex];
     if (!row) return;
 
-    // Create WHERE clause from primary key or first column
-    const primaryKey = tableColumns.find(col => col.is_primary_key === 'YES') || tableColumns[0];
-    const whereClause = `[${primaryKey.column_name}] = '${row[primaryKey.column_name]}'`;
+    setRowToDelete(rowIndex);
+    setShowDeleteRowConfirm(true);
+  };
 
-    if (confirm(`Are you sure you want to delete this row?`)) {
-      await onDeleteTableRow(rowIndex);
+  const confirmDeleteRow = async () => {
+    if (rowToDelete === null || !onDeleteTableRow) return;
+    
+    try {
+      await onDeleteTableRow(rowToDelete);
+    } catch (error) {
+      console.error('Error deleting row:', error);
+      alert('Failed to delete row. Please check the console for details.');
+    } finally {
+      setShowDeleteRowConfirm(false);
+      setRowToDelete(null);
     }
   };
 
@@ -177,6 +193,16 @@ const TableViewer: React.FC<TableViewerProps> = ({
       <div className="tab-content">
         {activeTab === 'structure' && (
           <div className="tab-pane structure-tab active">
+            <div className="structure-header">
+              <h3>Table Structure</h3>
+              <button
+                onClick={() => setShowEditStructureModal(true)}
+                className="btn btn-sm btn-primary"
+                disabled={loadingTableStructure}
+              >
+                ✏️ Edit Structure
+              </button>
+            </div>
             <div className="table-columns">
               {loadingTableStructure ? (
                 <SkeletonLoader type="table" rows={6} columns={6} />
@@ -374,6 +400,46 @@ const TableViewer: React.FC<TableViewerProps> = ({
         onApplyFilters={onApplyFilters || (() => Promise.resolve())}
         columns={tableColumns}
         currentFilters={currentFilters}
+      />
+
+      <EditStructureModal
+        isOpen={showEditStructureModal}
+        onClose={() => setShowEditStructureModal(false)}
+        columns={tableColumns}
+        tableName={selectedTable || ''}
+        onSave={onEditStructure || (() => Promise.resolve())}
+        loading={loadingTableStructure}
+      />
+
+      {/* Delete Row Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteRowConfirm}
+        onClose={() => {
+          setShowDeleteRowConfirm(false);
+          setRowToDelete(null);
+        }}
+        onConfirm={confirmDeleteRow}
+        title="Delete Row"
+        message={(() => {
+          if (rowToDelete === null || !tableData) return '';
+          const row = tableData.data[rowToDelete];
+          if (!row) return '';
+          
+          const primaryKey = tableColumns.find(col => col.is_primary_key === 'YES') || tableColumns[0];
+          const primaryKeyValue = row[primaryKey.column_name];
+          
+          const rowSummary = Object.entries(row)
+            .filter(([key]) => key !== 'row_num')
+            .slice(0, 3)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join('\n');
+
+          return `Are you sure you want to delete this row from "${selectedTable}"?\n\nRow Details:\n${rowSummary}\n\nPrimary Key: ${primaryKey.column_name} = ${primaryKeyValue}\n\n⚠️ This action cannot be undone!`;
+        })()}
+        confirmText="Delete Row"
+        cancelText="Cancel"
+        type="danger"
+        requireTextInput="DELETE"
       />
     </div>
   );

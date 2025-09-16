@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Table } from '../types';
 import SkeletonLoader from './SkeletonLoader';
 
@@ -19,6 +19,21 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSelectTable,
   onRefreshTables
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter tables based on search term
+  const filteredTables = useMemo(() => {
+    if (!searchTerm.trim()) return tables;
+    
+    return tables.filter(table => {
+      const fullTableName = `${table.schema_name}.${table.table_name}`.toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+      return fullTableName.includes(searchLower) || 
+             table.table_name.toLowerCase().includes(searchLower) ||
+             table.schema_name.toLowerCase().includes(searchLower);
+    });
+  }, [tables, searchTerm]);
+
   return (
     <div className="sidebar">
       <div className="sidebar-section">
@@ -33,11 +48,32 @@ const Sidebar: React.FC<SidebarProps> = ({
             {loadingTables ? '⏳' : '🔄'}
           </button>
         </div>
+        
+        {/* Search Input */}
+        <div className="table-search-container">
+          <input
+            type="text"
+            placeholder="Search tables..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="table-search-input"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="clear-search-btn"
+              title="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
         <div className="tables-list" id="tables-list">
           {loadingTables ? (
             <SkeletonLoader type="list" rows={5} />
-          ) : tables && tables.length > 0 ? (
-            tables.map((table) => (
+          ) : filteredTables && filteredTables.length > 0 ? (
+            filteredTables.map((table) => (
               <div 
                 key={`${table.schema_name}.${table.table_name}`}
                 className={`table-item ${selectedTable === `${table.schema_name}.${table.table_name}` ? 'active' : ''}`}
@@ -50,7 +86,9 @@ const Sidebar: React.FC<SidebarProps> = ({
               </div>
             ))
           ) : (
-            <div className="no-data">No tables found</div>
+            <div className="no-data">
+              {searchTerm ? `No tables found matching "${searchTerm}"` : 'No tables found'}
+            </div>
           )}
         </div>
       </div>

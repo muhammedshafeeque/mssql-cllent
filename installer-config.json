@@ -1,0 +1,83 @@
+{
+  "installer": {
+    "name": "Byzand MSSQL Client",
+    "version": "1.1.0",
+    "description": "A beautiful MSSQL database client application with enhanced features",
+    "company": "Byzand Team",
+    "copyright": "© 2025 Byzand MSSQL Client",
+    "icon": "./assets/icon.ico",
+    "setupExe": "Byzand-Setup-v1.1.0.exe",
+    "setupMsi": "Byzand-Setup-v1.1.0.msi",
+    "installDirectory": "%LOCALAPPDATA%\\Byzand",
+    "license": "./LICENSE.txt",
+    "steps": [
+      {
+        "name": "Welcome",
+        "title": "Welcome to Byzand MSSQL Client Setup",
+        "message": "This wizard will guide you through the installation of Byzand MSSQL Client.\n\nByzand is a powerful and user-friendly database management tool for Microsoft SQL Server.\n\nClick Next to continue, or Cancel to exit Setup.",
+        "type": "welcome"
+      },
+      {
+        "name": "License",
+        "title": "License Agreement",
+        "message": "Please read the following license agreement. You must accept the terms of this agreement before continuing with the installation.",
+        "type": "license",
+        "licenseFile": "./LICENSE.txt"
+      },
+      {
+        "name": "InstallLocation",
+        "title": "Choose Install Location",
+        "message": "Choose the folder in which to install Byzand MSSQL Client.",
+        "type": "directory",
+        "defaultLocation": "%LOCALAPPDATA%\\Byzand"
+      },
+      {
+        "name": "ReadyToInstall",
+        "title": "Ready to Install",
+        "message": "Setup is ready to install Byzand MSSQL Client on your computer.\n\nClick Install to continue with the installation, or click Back to review or change any of your installation settings.",
+        "type": "ready"
+      }
+    ],
+    "shortcuts": {
+      "startMenu": [
+        {
+          "name": "Byzand MSSQL Client",
+          "target": "byzand.exe",
+          "icon": "./assets/icon.ico",
+          "description": "Launch Byzand MSSQL Client"
+        }
+      ],
+      "desktop": [
+        {
+          "name": "Byzand MSSQL Client",
+          "target": "byzand.exe",
+          "icon": "./assets/icon.ico",
+          "description": "Launch Byzand MSSQL Client"
+        }
+      ]
+    },
+    "registry": [
+      {
+        "root": "HKCU",
+        "key": "Software\\Byzand\\MSSQLClient",
+        "name": "InstallPath",
+        "type": "REG_SZ",
+        "value": "[INSTALLDIR]"
+      },
+      {
+        "root": "HKCU",
+        "key": "Software\\Byzand\\MSSQLClient",
+        "name": "Version",
+        "type": "REG_SZ",
+        "value": "1.1.0"
+      }
+    ],
+    "uninstaller": {
+      "displayName": "Byzand MSSQL Client",
+      "publisher": "Byzand Team",
+      "helpLink": "https://github.com/your-repo/byzand",
+      "updateInfoUrl": "https://github.com/your-repo/byzand/releases",
+      "aboutUrl": "https://github.com/your-repo/byzand"
+    }
+  }
+}
